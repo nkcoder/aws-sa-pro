@@ -1,0 +1,12 @@
+## AWS Organizations
+
+- You can invite an existing or create a new AWS account
+- Role switch in organization (Assumed role: OrganizationAccountAccessRole)
+
+## SCP - Service Control Policies
+
+- Allows restrictions to be placed on MEMBER accounts in the form of boundaries
+- The MANAGEMENT account is not affected
+- SCPs don't give permissions - they just control what an account CAN and CANNOT grant via identity policies.
+
+

@@ -1,0 +1,14 @@
+# Copy to terraform.tfvars and adjust. All values are optional — the defaults
+# in variables.tf reproduce the original CloudFormation demo.
+
+region        = "us-east-1"
+instance_type = "t2.micro"
+
+# Override the AMI lookup if you need a different Amazon Linux flavour.
+# ami_ssm_parameter = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+
+common_tags = {
+  Project   = "A4L-RoleSessionInvalidation"
+  ManagedBy = "Terraform"
+  Owner     = "your-name"
+}

@@ -1,0 +1,19 @@
+#!/bin/bash -xe
+yum -y update
+yum -y install httpd wget
+%{ for url in asset_urls ~}
+wget ${url} -P /var/www/html
+%{ endfor ~}
+usermod -a -G apache ec2-user
+chown -R ec2-user:apache /var/www
+chmod 2775 /var/www
+find /var/www -type d -exec chmod 2775 {} \;
+find /var/www -type f -exec chmod 0664 {} \;
+systemctl enable httpd
+systemctl start httpd
+rpm -Uvh https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+# CWAgent Fix
+mkdir -p /usr/share/collectd/
+touch /usr/share/collectd/types.db
+# CWAgent Fix End
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c ssm:${cw_param_name} -s
