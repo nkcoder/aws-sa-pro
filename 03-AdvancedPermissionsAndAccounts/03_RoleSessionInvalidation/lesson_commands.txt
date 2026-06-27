@@ -1,38 +1,37 @@
+## What is 169.254.169.254?
 
-# ON EC2
-curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
-get the role name
-curl http://169.254.169.254/latest/meta-data/iam/security-credentials/REPLACE_ME
+It's the Instance Metadata Service (IMDS) — a special link-local address (in the 169.254.0.0/16 APIPA range) that's only reachable from inside an EC2 instance. It's not routable on the internet; AWS intercepts requests to it and returns metadata about that specific instance: its instance ID, AZ, networking, user-data, and — relevant here — temporary credentials for any IAM role attached via an instance profile.
 
+The path /latest/meta-data/iam/security-credentials/ lists the role name; appending the role name returns rotating AccessKeyId / SecretAccessKey / Token.
 
-# Local Machine
-## LINUX or MACOS
+## On EC2
 
-export AWS_ACCESS_KEY_ID=
-export AWS_SECRET_ACCESS_KEY=
-export AWS_SESSION_TOKEN=
-aws s3 ls
-aws ec2 describe-instances --region us-east-1
+```sh
+sh-5.2$ curl -v http://169.254.169.254/latest/meta-data/iam/security-credentials/
+*   Trying 169.254.169.254:80...
+* Established connection to 169.254.169.254 (169.254.169.254 port 80) from 10.16.58.117 port 40200
+* using HTTP/1.x
+> GET /latest/meta-data/iam/security-credentials/ HTTP/1.1
+> Host: 169.254.169.254
+> User-Agent: curl/8.17.0
+> Accept: */*
+>
+* Request completely sent off
+< HTTP/1.1 401 Unauthorized
+< Content-Length: 0
+< Date: Sat, 27 Jun 2026 09:47:08 GMT
+< Server: EC2ws
+< Connection: close
+< Content-Type: text/plain
+```
 
-## WINDOWS
+The instance uses IMDSv2, and you're doing a plain GET (IMDSv1).
+IMDSv2 is token-based and is the default/enforced on many instances. A bare curl http://169.254.169.254/... gets 401 Unauthorized. You must fetch a token first:
 
-SET AWS_ACCESS_KEY_ID=AKID
-SET AWS_SECRET_ACCESS_KEY=SAK
-SET AWS_SESSION_TOKEN=TOKEN 
-aws s3 ls
-aws ec2 describe-instances --region us-east-1
+```sh
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
+curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/
 
-# ON EC2 (Test Invalidation)
-
-aws ec2 describe-instances --region us-east-1
-aws s3 ls
-curl http://169.254.169.254/latest/meta-data/iam/security-credentials/
-get the role name
-curl http://169.254.169.254/latest/meta-data/iam/security-credentials/REPLACE_ME
-
-# ON EC2 (After Stop and Start)
-
-aws ec2 describe-instances --region us-east-1
-aws s3 ls
-
+curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/a4l-instance-60531a15efcc8420590c8886b7
+```

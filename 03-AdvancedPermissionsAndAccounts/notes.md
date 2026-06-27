@@ -9,4 +9,17 @@
 - The MANAGEMENT account is not affected
 - SCPs don't give permissions - they just control what an account CAN and CANNOT grant via identity policies.
 
+## IAM Identity Center
+
+- AWS Access Portal: https://daniel-dev.awsapps.com/start
+- Users, Groups
+- Permission Sets
+
+```sh
+$ aws configure sso
+$ export AWS_PROFILE=xxx
+$ aws sso login
+$ aws sts get-caller-identity
+```
+
 
