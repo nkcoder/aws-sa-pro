@@ -22,4 +22,12 @@ $ aws sso login
 $ aws sts get-caller-identity
 ```
 
+## IAM Policy Evaluation
 
+- Explicit Deny wins
+- Explicit Allow
+- Implicit Deny all
+- Conditional policy
+
+- A policy with only Deny blocks has no effect (because of the implicit Deny all)
+- Inverse policy: `Action` => `NotAction`, `StringEquals` => `StringNotEquals`
